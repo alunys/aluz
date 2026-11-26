@@ -1,6 +1,6 @@
 // Guarda la app para que funcione sin internet.
 // Cuando cambies algo de la app, subí el número de versión.
-const CACHE = 'grimorio-v1';
+const CACHE = 'grimorio-v3';
 const FILES = ['./', './index.html', './manifest.json', './img/icono-192.png', './img/icono-512.png'];
 
 self.addEventListener('install', e => {
