@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#120c26">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="img/icono-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Grimorio">
+<title>Grimorio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: una biblioteca mágica a medianoche: violeta, estrellas, oro y luz rosada.
+IDEA: su libro mágico vinculado al anillo, con páginas que se editan y se encienden.
+PICTURE: su propio retrato leyendo el libro que brilla, como portada de la ficha.
+COLOUR and TYPE: noche violeta, oro, rosa ilusión y turquesa arcano; Cinzel + Nunito.
+LAYOUT: app de teléfono: cabecera con su cara, una pestaña por vez, barra inferior.
+*/
+:root{color-scheme:dark;--bg:#120c26;--bg2:#1a1236;--panel:#211740;--panel2:#2c1f55;--ink:#f6edff;--soft:#c0b0dc;
+--gold:#f0c46a;--copper:#ff8fc8;--ruby:#ff6b86;--sage:#7fe3d6;--line:rgba(240,196,106,.28)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(1000px 600px at 80% -10%,rgba(160,90,230,.38),transparent 60%),radial-gradient(800px 600px at 0 45%,rgba(255,120,190,.14),transparent 60%),radial-gradient(700px 500px at 100% 100%,rgba(90,200,230,.12),transparent 60%),var(--bg);background-attachment:fixed;color:var(--ink);font:16px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+#motes{position:fixed;inset:0;pointer-events:none;z-index:0}
+#motes i{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold);}#motes i:nth-child(3n){background:var(--copper);box-shadow:0 0 6px var(--copper)}#motes i:nth-child(3n+1){background:var(--sage);box-shadow:0 0 6px var(--sage)}#motes i{animation:float 9s ease-in-out infinite;opacity:.0}
+@keyframes float{0%{transform:translateY(20px);opacity:0}40%{opacity:.7}100%{transform:translateY(-60px);opacity:0}}
+h1,h2,h3{margin:0;line-height:1.1;text-wrap:balance}
+h2{font:700 22px Cinzel,serif;color:var(--gold);margin:26px 0 12px;display:flex;gap:10px;align-items:center}
+h2::before{content:'✦';color:var(--copper);font-size:14px}
+h3{font:700 17px Cinzel,serif}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--sage);outline-offset:2px}
+.wrap{max-width:860px;margin:0 auto;padding:0 max(4vw,14px);position:relative;z-index:1}
+/* cabecera */
+.top{position:sticky;top:0;z-index:6;background:rgba(18,12,38,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:8px}
+.av{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex:none;background:var(--panel)}
+.who{flex:1}.who b{font:700 19px Cinzel,serif;display:block;color:var(--ink)}.who small{color:var(--soft);font-size:13px}
+.hpPill{flex:none;border:1px solid rgba(255,107,134,.5);background:rgba(255,107,134,.12);color:#ffd2dc;border-radius:999px;padding:6px 12px;font-weight:800;font-size:15px;min-height:40px}
+.edit{flex:none;min-height:40px;border-radius:12px;border:1px solid var(--line);background:none;padding:0 12px;font-weight:700;color:var(--gold)}
+.edit[aria-pressed=true]{background:var(--gold);color:#1d1a10}
+/* pestañas */
+.tab{display:none}.tab.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:7;background:rgba(18,12,38,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.bar .wrap{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:0}
+.bar a{display:grid;justify-items:center;gap:1px;padding:8px 0 9px;color:var(--soft);text-decoration:none;font-size:12px;font-weight:700}
+.bar a span{font-size:21px;line-height:1}
+.bar a.on{color:var(--gold)}
+/* portada */
+.hero{position:relative;margin-top:14px;border-radius:22px;overflow:hidden;border:1px solid var(--line);min-height:230px;background:#0d0820}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 25%}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(14,8,32,.94))}
+.hero .t{position:absolute;left:18px;right:18px;bottom:16px;z-index:1}
+.hero h1{font:700 clamp(38px,10vw,56px)/1 'Cinzel Decorative',serif;color:#fff3dc;text-shadow:0 2px 24px rgba(255,143,200,.5)}
+.hero p{margin:6px 0 0;color:#e8d8bc;font-size:15px}
+.hero q{display:block;margin-top:6px;font-style:italic;color:var(--gold);font-size:15px}
+/* tarjetas */
+.card{background:linear-gradient(170deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:16px}
+.vit{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px}
+.hp{display:flex;align-items:baseline;gap:8px}.hp b{font:800 50px/1 Nunito;color:#ff9fb4}.hp span{color:var(--soft)}
+.meter{height:12px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0}.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--ruby),var(--copper),var(--gold));transition:width .35s}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-weight:700}
+.btn.g{background:linear-gradient(135deg,var(--gold),#f0d28f);color:#2a1640;border-color:transparent}
+.btn.c{background:linear-gradient(135deg,var(--copper),#c58cff);color:#2a1640;border-color:transparent}
+.btn.s{min-height:38px;padding:0 10px;font-size:14px}
+.num,.inp,select{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font:16px Nunito;padding:0 10px}
+.num{width:76px;text-align:center}
+.inp{width:100%}
+textarea{width:100%;min-height:96px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font:15px/1.55 Nunito;padding:10px;resize:vertical}
+label.f{display:block;font-size:13px;color:var(--soft);font-weight:700;margin:10px 0 4px}
+.mini{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mini div{background:rgba(0,0,0,.2);border-radius:12px;padding:8px 10px}.mini small{display:block;color:var(--soft);font-size:13px}.mini b{font-size:19px;color:var(--gold)}
+.mini input{width:100%;min-height:36px;font-size:16px}
+.g6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tap{border:1px solid var(--line);background:linear-gradient(170deg,var(--panel2),var(--panel));border-radius:16px;padding:10px 4px;text-align:center;min-height:44px}
+.tap:active{transform:scale(.96)}
+.tap small{display:block;color:var(--soft);font-size:13px;font-weight:700}.tap b{display:block;font-size:26px;color:var(--gold)}.tap em{font-style:normal;color:var(--soft);font-size:13px}
+.tap b.low{color:var(--ruby)}
+.list{display:grid;gap:8px}
+.li{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:10px 14px;min-height:48px}
+.li b{color:var(--gold);font-size:19px;white-space:nowrap}.li b.low{color:var(--ruby)}.li .d{color:var(--soft);font-size:13px}
+details.pg{border:1px solid var(--line);background:linear-gradient(170deg,var(--panel2),var(--panel));border-radius:18px;overflow:hidden}
+details.pg>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;gap:12px;align-items:center}
+details.pg>summary::-webkit-details-marker{display:none}
+.sig{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--gold);border:1px solid var(--line);background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.14),rgba(0,0,0,.25))}
+.sum{flex:1}.sum small{display:block;color:var(--soft);font-size:13px}
+.chev{color:var(--gold);transition:transform .2s}details.pg[open] .chev{transform:rotate(90deg)}
+.body{padding:0 16px 16px}.body p{margin:6px 0;font-size:15px}.body ul{margin:6px 0;padding-left:18px;font-size:15px}
+.how{background:rgba(127,227,214,.09);border-left:3px solid var(--sage);border-radius:8px;padding:8px 12px;font-size:14px;color:#d8f7f2;margin:10px 0}
+.warn{background:rgba(240,196,106,.09);border-left:3px solid var(--gold);border-radius:8px;padding:8px 12px;font-size:14px;color:#f3e3c0;margin:10px 0}
+.tag{display:inline-block;font-size:13px;font-weight:700;padding:2px 9px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--sage);margin:2px 4px 2px 0}
+.used{color:var(--ruby);font-weight:800}
+.lvl{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;gap:8px;flex-wrap:wrap}.lvl h3{color:var(--copper);font-size:19px}
+.pips{display:flex;gap:6px;flex-wrap:wrap}
+.pip{width:32px;height:32px;border-radius:50%;border:2px solid var(--gold);background:radial-gradient(circle at 35% 30%,#fff1cf,var(--gold));box-shadow:0 0 10px rgba(212,173,98,.5)}
+.pip.off{background:transparent;box-shadow:none;opacity:.5}
+.ed{border-style:dashed}
+.ed .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.add{width:100%;min-height:48px;border:1px dashed var(--gold);background:rgba(240,196,106,.07);color:var(--gold);border-radius:14px;font-weight:800;margin-top:8px}
+.del{color:var(--ruby)}
+.curse{border-color:rgba(255,107,134,.5);background:linear-gradient(170deg,#3a1838,#1d1232)}
+.curse h3{color:#ff9fb4}
+.ibig{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.ibig b{font:800 44px/1 Nunito;color:var(--sage)}.ibig b.low{color:var(--ruby)}.ibig span{color:var(--soft)}
+.chip{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:12px;min-height:44px;padding:0 12px;font-weight:700}
+.chip[aria-pressed=true]{background:var(--gold);color:#2a1640;border-color:var(--gold)}
+/* historia */
+.port{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:16px;align-items:start}
+.port .pic{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);aspect-ratio:3/7;background:var(--panel)}
+.port .pic img{width:100%;height:100%;object-fit:cover;object-position:50% 0}
+.gal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gal figure{margin:0;position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1;background:var(--panel)}
+.gal img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.gal button.open{position:absolute;inset:0;background:none;border:0}
+.up{display:grid;place-items:center;border:1px dashed var(--gold);border-radius:14px;aspect-ratio:1;color:var(--gold);font-weight:800;text-align:center;font-size:14px;cursor:pointer;padding:8px}
+.up input{display:none}
+/* diario */
+.entry{margin-bottom:10px}.entry .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.entry input.inp{font:700 17px Cinzel,serif}
+/* dados */
+.tray{display:grid;grid-template-columns:200px minmax(0,1fr);gap:20px;align-items:center}
+.diebox{position:relative;width:200px;height:200px}
+.ring{position:absolute;inset:0;animation:rot 40s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}
+.die{position:absolute;inset:30px;border:0;background:none;padding:0;filter:drop-shadow(0 0 16px rgba(255,143,200,.5))}
+.die svg{width:100%;height:100%}
+.die .n{position:absolute;inset:0;display:grid;place-items:center;font:800 40px Nunito;color:#fff;padding-top:8px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.die.spin svg{animation:spin .6s cubic-bezier(.3,1.4,.5,1)}@keyframes spin{from{transform:rotate(-260deg) scale(.6)}}
+.spark{position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;pointer-events:none;animation:fly .8s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+.big{font:800 clamp(46px,11vw,64px)/1 Nunito}.crit{color:var(--gold);text-shadow:0 0 20px var(--gold)}.fail{color:var(--ruby)}
+.dice{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.dice button{flex:1 1 52px;min-height:46px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-weight:800}
+.log{list-style:none;margin:12px 0 0;padding:0;font-size:14px;color:var(--soft)}.log li{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}.log li:first-child{color:var(--ink)}
+/* resultado flotante */
+.rc{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom));transform:translate(-50%,20px);width:min(92vw,420px);z-index:8;background:linear-gradient(160deg,#3a2668,#1d1438);border:1px solid var(--gold);border-radius:18px;padding:12px 16px;display:flex;gap:14px;align-items:center;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.rc.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.rc .big{font-size:44px;min-width:2ch;text-align:center}
+.rc small{display:block;color:var(--soft);font-size:13px}.rc b{display:block}
+.lb{position:fixed;inset:0;z-index:9;background:rgba(8,4,20,.93);display:none;align-items:center;justify-content:center;padding:16px;flex-direction:column;gap:12px}
+.lb.on{display:flex}.lb img{max-width:100%;max-height:72vh;border-radius:14px}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--gold);color:#2a1640;padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+.note{font-size:13px;color:var(--soft);margin-top:8px}
+dl.gl{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr);gap:6px 14px;margin:0;font-size:15px}dl.gl dt{color:var(--gold);font-weight:700}dl.gl dd{margin:0}
+@media(prefers-reduced-motion:reduce){.ring,#motes i,.die.spin svg,.spark,.tab.on{animation:none}}
+@media(max-width:600px){.vit,.port{grid-template-columns:minmax(0,1fr)}.port .pic{aspect-ratio:3/4}.g6{grid-template-columns:repeat(3,minmax(0,1fr))}.tray{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.tray .row{justify-content:center}.diebox{width:170px;height:170px}.die{inset:26px}dl.gl{grid-template-columns:minmax(0,1fr)}.who small{display:none}}
+</style>
+</head>
+<body>
+<div id="motes" aria-hidden="true"></div>
+
+<header class="top"><div class="wrap">
+  <img class="av" id="av" alt="Retrato">
+  <div class="who"><b id="hName"></b><small id="hSub"></small></div>
+  <button class="hpPill" id="hpPill">♥ 20/20</button>
+  <button class="edit" id="editB" aria-pressed="false">✎ Editar</button>
+</div></header>
+
+<main class="wrap">
+<!-- FICHA -->
+<section class="tab" id="t-ficha">
+  <div class="hero"><img id="heroImg" alt=""><div class="t"><h1 id="heroName"></h1><p id="heroSub"></p><q id="heroQuote"></q></div></div>
+  <h2>Vida y estado</h2>
+  <div class="vit">
+    <div class="card">
+      <div class="hp"><b id="hpN">20</b><span id="hpMaxT">/ 20 PG</span></div>
+      <div class="meter"><i id="hpBar"></i></div>
+      <div class="row">
+        <input class="num" id="hpAmt" type="number" value="1" min="1" inputmode="numeric" aria-label="Cantidad">
+        <button class="btn" id="dmg" style="color:#ff9fb4">Daño</button>
+        <button class="btn" id="heal" style="color:var(--sage)">Curar</button>
+        <button class="btn" id="full">Llenar</button>
+      </div>
+      <p class="note">En 0 PG quedás inconsciente; con PG negativos iguales a tu CON, morís.</p>
+    </div>
+    <div class="card mini" id="vitals"></div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="tap" style="flex:1" id="initB"><small>Iniciativa</small><b id="initV">+0</b></button>
+    <button class="btn g" id="rest" style="flex:2">☾ Descanso largo</button>
+  </div>
+  <p class="note">El descanso recupera conjuros y usos de poderes, cura 1 PG y 1 punto de INT.</p>
+
+  <div id="curseBox"></div>
+
+  <h2>Atributos</h2>
+  <div class="g6" id="stats"></div>
+  <h2>Salvaciones</h2>
+  <div class="g3" id="saves"></div>
+  <div class="row" style="margin-top:10px">
+    <button class="chip" id="resB" aria-pressed="false">Resistencia +1</button>
+    <button class="chip" id="encB" aria-pressed="false">Es un encantamiento (+2)</button>
+  </div>
+  <h2>Habilidades</h2>
+  <div class="list" id="skills"></div>
+</section>
+
+<!-- MAGIA -->
+<section class="tab" id="t-magia">
+  <h2>Poderes</h2>
+  <div class="list" id="powers"></div>
+  <h2>Libro de conjuros</h2>
+  <p class="note" style="margin-top:-6px">CD = 10 + nivel del conjuro + <span id="imTxt">6</span> (INT). Encantamientos +1.</p>
+  <div id="spells"></div>
+</section>
+
+<!-- OBJETOS -->
+<section class="tab" id="t-objetos">
+  <h2>Objetos mágicos</h2>
+  <div class="list" id="items"></div>
+  <h2>Bolsa</h2>
+  <div class="card mini" id="purse"></div>
+</section>
+
+<!-- HISTORIA -->
+<section class="tab" id="t-historia">
+  <h2 id="whoT">Quién es</h2>
+  <div class="port">
+    <div>
+      <div class="pic"><img id="portImg" alt="Retrato"></div>
+      <div class="row" style="margin-top:8px">
+        <label class="btn s" style="display:inline-flex;align-items:center">Cambiar retrato<input type="file" accept="image/*" id="portFile" hidden></label>
+        <label class="btn s" style="display:inline-flex;align-items:center">Cambiar cara<input type="file" accept="image/*" id="avFile" hidden></label>
+        <label class="btn s" style="display:inline-flex;align-items:center">Cambiar portada<input type="file" accept="image/*" id="heroFile" hidden></label>
+      </div>
+    </div>
+    <div id="ident"></div>
+  </div>
+  <div id="story"></div>
+  <h2>Rasgos y dotes</h2>
+  <div class="list" id="traits"></div>
+  <h2>Galería</h2>
+  <div class="gal" id="gal"></div>
+  <p class="note">Tocá una imagen para verla grande, usarla de retrato o borrarla.</p>
+  <h2>Copia de seguridad</h2>
+  <div class="card">
+    <p style="margin:0 0 10px;font-size:15px">Todo se guarda en este dispositivo. Copiá la copia de seguridad de vez en cuando y guardala en tus notas o mandatela por mensaje.</p>
+    <div class="row"><button class="btn g" id="copyB">Copiar copia</button><button class="btn" id="dlB" hidden>Descargar archivo</button><button class="btn del" id="resetB">Restablecer todo</button></div>
+    <label class="f" for="impT">Importar una copia</label>
+    <textarea id="impT" placeholder="Pegá acá el texto de una copia…" style="min-height:70px"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn" id="impB">Importar texto</button><label class="btn g" style="display:inline-flex;align-items:center">Importar archivo<input type="file" accept=".json,application/json,text/plain" id="impFile" hidden></label></div>
+  </div>
+  <h2>Guía rápida</h2>
+  <div class="card"><dl class="gl">
+    <dt>Tirada d20</dt><dd>Tirás un d20 y sumás el modificador. Si igualás o superás lo que pide el DM, lo lográs.</dd>
+    <dt>CD</dt><dd>El número que el enemigo tiene que igualar en su salvación para resistir tu magia.</dd>
+    <dt>Ataque de toque</dt><dd>Solo tenés que tocar al enemigo, no atravesar su armadura: más fácil de acertar.</dd>
+    <dt>Concentración</dt><dd>El conjuro dura mientras le prestes atención (tu acción estándar de cada turno).</dd>
+    <dt>Cegado</dt><dd>−2 a la CA, pierde la DES a la CA y falla el 50% de sus ataques. Deslumbrado: −1 a atacar.</dd>
+    <dt>Aturdido</dt><dd>Suelta lo que tiene, no actúa y tiene −2 a la CA.</dd>
+  </dl></div>
+</section>
+
+<!-- DIARIO -->
+<section class="tab" id="t-diario">
+  <h2>Diario de aventura</h2>
+  <button class="add" id="newEntry" style="margin:0 0 12px">+ Nueva entrada</button>
+  <div id="journal"></div>
+</section>
+
+<!-- DADOS -->
+<section class="tab" id="t-dados">
+  <h2>Bandeja de dados</h2>
+  <div class="card tray">
+    <div class="diebox" id="diebox">
+      <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="96" fill="none" stroke="#d4ad62" stroke-opacity=".5"/>
+        <circle cx="100" cy="100" r="84" fill="none" stroke="#ff8fc8" stroke-opacity=".4" stroke-dasharray="2 6"/>
+        <path id="rp" d="M100,10 a90,90 0 1,1 -0.1,0" fill="none"/>
+        <text font-size="10" fill="#d4ad62" fill-opacity=".75" letter-spacing="3" font-family="Cinzel,serif"><textPath href="#rp">✦ ILLUSIO ✦ LUMEN ✦ SOMNIA ✦ VERITAS ✦ ILLUSIO ✦ LUMEN ✦ SOMNIA ✦</textPath></text>
+        <polygon points="100,22 168,139 32,139" fill="none" stroke="#7fe3d6" stroke-opacity=".25"/><polygon points="100,178 32,61 168,61" fill="none" stroke="#7fe3d6" stroke-opacity=".25"/>
+      </svg>
+      <button class="die" id="die" aria-label="Tirar d20">
+        <svg viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb3dd"/><stop offset=".5" stop-color="#b26be0"/><stop offset="1" stop-color="#4b2a99"/></linearGradient></defs>
+        <polygon points="50,4 92,28 92,72 50,96 8,72 8,28" fill="url(#g)" stroke="#f0d28f" stroke-width="2"/>
+        <polygon points="50,22 76,64 24,64" fill="rgba(255,255,255,.14)" stroke="#f0d28f" stroke-width="1.4"/>
+        <path d="M50 4 50 22M92 28 76 64M8 28 24 64M50 96 24 64M50 96 76 64M8 72 24 64M92 72 76 64M8 28 50 22M92 28 50 22" stroke="#f0d28f" stroke-width="1.2" opacity=".7"/></svg>
+        <span class="n" id="dn">20</span>
+      </button>
+    </div>
+    <div>
+      <div class="note" id="what" style="margin:0">Tocá el dado o cualquier número de la ficha</div>
+      <div class="big" id="tot">✧</div>
+      <div class="note" id="brk" style="margin:0;min-height:20px"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="chip" id="advB" aria-pressed="false">Ventaja</button>
+        <button class="chip" id="disB" aria-pressed="false">Desventaja</button>
+        <label class="row" style="font-size:14px;color:var(--soft)">Extra <input class="num" id="extra" type="number" value="0" inputmode="numeric" style="width:62px"></label>
+      </div>
+    </div>
+  </div>
+  <div class="dice" id="dice"></div>
+  <ul class="log" id="log"></ul>
+</section>
+</main>
+
+<nav class="bar"><div class="wrap">
+  <a href="#ficha" data-t="ficha"><span>❦</span>Ficha</a>
+  <a href="#magia" data-t="magia"><span>✧</span>Magia</a>
+  <a href="#objetos" data-t="objetos"><span>◈</span>Objetos</a>
+  <a href="#historia" data-t="historia"><span>❧</span>Historia</a>
+  <a href="#diario" data-t="diario"><span>✎</span>Diario</a>
+  <a href="#dados" data-t="dados"><span>⬡</span>Dados</a>
+</div></nav>
+
+<div class="rc" id="rc"><div class="big" id="rcT">0</div><div><b id="rcL"></b><small id="rcB"></small></div></div>
+<div class="lb" id="lb"><img id="lbImg" alt=""><div class="row"><button class="btn g" id="lbPort">Usar de retrato</button><button class="btn" id="lbHero">Usar de portada</button><button class="btn del" id="lbDel">Borrar</button><button class="btn" id="lbX">Cerrar</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const sg=n=>(n>=0?'+':'')+n;
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const KEY='aluz-app-v1';
+
+/* ---------- datos iniciales (de la hoja de Agostina) ---------- */
+const D0={
+ name:'Mi personaje',race:'',cls:'',align:'',player:'',deity:'',home:'',age:'',quote:'',
+ avatar:'',portrait:'',hero:'',gallery:[],
+ hpMax:10,hp:10,ac:10,touch:10,flat:10,speed:'30 pies',bab:0,init:0,gold:0,xp:0,
+ stats:[{k:'FUE',n:'Fuerza',v:10},{k:'DES',n:'Destreza',v:10},{k:'CON',n:'Constitución',v:10},{k:'INT',n:'Inteligencia',v:10},{k:'SAB',n:'Sabiduría',v:10},{k:'CAR',n:'Carisma',v:10}],
+ saves:[{n:'Fortaleza',b:0},{n:'Reflejos',b:0},{n:'Voluntad',b:0}],
+ skills:[],powers:[],slots1:1,slotsUsed:0,spells:[],items:[],traits:[],
+ story:{concept:'',appearance:'',personality:'',origin:'',goals:'',people:'',secrets:''},
+ journal:[],curse:{on:0,dc:15,dmg:0,day:'',res:''},res:0,enc:0
+};
+const PH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><defs><radialGradient id="a" cx=".5" cy=".35" r=".8"><stop offset="0" stop-color="#6b3fb0"/><stop offset="1" stop-color="#140c2a"/></radialGradient></defs><rect width="300" height="400" fill="url(#a)"/><circle cx="150" cy="170" r="70" fill="none" stroke="#f0c46a" stroke-opacity=".6"/><text x="150" y="192" font-size="64" text-anchor="middle" fill="#f0c46a">✦</text><text x="150" y="300" font-size="16" text-anchor="middle" fill="#c0b0dc" font-family="sans-serif">Subí una imagen</text></svg>');
+const STORY=[['concept','Concepto','Quién es en una frase'],['appearance','Apariencia','Cómo se ve'],['personality','Personalidad','Cómo habla, qué le gusta, qué la asusta…'],['origin','Historia y origen','De dónde viene, su familia, cómo aprendió magia…'],['goals','Objetivos','Qué busca, qué quiere descubrir…'],['people','Personas importantes','Compañeros, PNJs, maestros, rivales…'],['secrets','Secretos','Lo que nadie sabe (¡ni el DM, quizás!)']];
+
+let D;
+try{D=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+if(!D){D=JSON.parse(JSON.stringify(D0));
+ try{const o=JSON.parse(localStorage.getItem('aluz-v2')||'null');if(o){D.hp=o.hp??D.hp;D.gold=o.gold??D.gold;D.xp=o.xp??D.xp;D.curse.dmg=o.intDmg||0;if(o.notes)D.journal.push({id:uid(),date:new Date().toISOString().slice(0,10),title:'Notas anteriores',text:o.notes})}}catch(e){}}
+for(const k in D0)if(D[k]===undefined)D[k]=JSON.parse(JSON.stringify(D0[k]));
+let saveT;const flush=()=>{clearTimeout(saveT);try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('No hay más espacio: borrá alguna imagen de la galería')}};const save=()=>{clearTimeout(saveT);saveT=setTimeout(flush,250)};addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.hidden)flush()});
+let E=false,adv=0;
+
+/* ---------- cálculos ---------- */
+const st=k=>D.stats.find(s=>s.k===k)||{v:10};
+const mod=v=>Math.floor((v-10)/2);
+const INTv=()=>Math.max(0,st('INT').v-(D.curse.on?D.curse.dmg:0));
+const IM=()=>mod(INTv());
+const dl=()=>IM()-mod(st('INT').v);
+const bonus1=m=>m>=1?Math.floor((m-1)/4)+1:0;
+const max1=()=>INTv()<11?0:Math.max(0,D.slots1-(bonus1(mod(st('INT').v))-bonus1(IM())));
+const uses=p=>{if(p.u===''||p.u==null)return null;const s=String(p.u).replace(/\s/g,'').replace(/INT/g,IM());return Math.max(0,(s.match(/[+-]?\d+/g)||[]).reduce((a,t)=>a+(+t),0))};
+const T=s=>String(s??'').replace(/\{c0\}/g,10+IM()).replace(/\{c1\}/g,11+IM()).replace(/\{c1e\}/g,12+IM()).replace(/\{im\}/g,IM()).replace(/\{ray\}/g,uses(D.powers.find(p=>p.id==='ray')||{u:''})??'');
+const cd=sp=>10+(+sp.l)+IM()+(sp.e?1:0);
+
+/* ---------- dados ---------- */
+const die=$('die');const d=n=>1+Math.floor(Math.random()*n);
+function burst(gold){const box=$('diebox');const cols=gold?['#f0c46a','#fff1cf']:['#ff8fc8','#7fe3d6','#c58cff','#f0c46a'];
+ for(let i=0;i<(gold?26:14);i++){const s=document.createElement('span');s.className='spark';const a=Math.random()*6.283,r=60+Math.random()*50;s.style.cssText=`--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px;background:${cols[i%cols.length]};box-shadow:0 0 8px ${cols[i%cols.length]}`;box.appendChild(s);setTimeout(()=>s.remove(),850)}}
+let rcT;
+function show(label,total,brk,cls,face){
+ $('what').textContent=label;$('tot').textContent=total;$('tot').className='big '+(cls||'');$('brk').textContent=brk;$('dn').textContent=face;
+ die.classList.remove('spin');void die.offsetWidth;die.classList.add('spin');burst(cls==='crit');
+ const li=document.createElement('li');li.textContent=label+': '+total+(brk?'  ('+brk+')':'');const lg=$('log');lg.prepend(li);while(lg.children.length>20)lg.lastChild.remove();
+ if(cur!=='dados'){$('rcT').textContent=total;$('rcT').className='big '+(cls||'');$('rcL').textContent=label+(cls==='crit'?' ✦ ¡20 natural!':cls==='fail'?' · 1 natural':'');$('rcB').textContent=brk;$('rc').classList.add('on');clearTimeout(rcT);rcT=setTimeout(()=>$('rc').classList.remove('on'),4500)}
+}
+$('rc').onclick=()=>$('rc').classList.remove('on');
+function roll20(label,m){
+ const ex=+$('extra').value||0;let a=d(20),b=null,r=a;if(adv){b=d(20);r=adv>0?Math.max(a,b):Math.min(a,b)}
+ let bon=[];if(D.saves.some(s=>s.n===label)){if(D.res){m+=1;bon.push('Resistencia')}if(D.enc){m+=2;bon.push('vs encant.')}}
+ const tot=r+m+ex;show(label,tot,'d20 '+(b!==null?'['+a+', '+b+'] → '+r:r)+' '+sg(m)+(ex?' '+sg(ex):'')+(bon.length?' · '+bon.join(', '):''),r===20?'crit':r===1?'fail':'',r);return{r,tot};
+}
+function rollExpr(label,ex){const m=String(ex).replace(/\s/g,'').match(/^(\d*)d(\d+)([+-]\d+)?$/i);if(!m){toast('Dado no válido: '+ex);return}
+ const n=+(m[1]||1),s=+m[2],k=+(m[3]||0);const rs=Array.from({length:n},()=>d(s));show(label,rs.reduce((a,b)=>a+b,0)+k,n+'d'+s+' ['+rs.join(', ')+']'+(k?' '+sg(k):''),'',rs[0])}
+$('dice').innerHTML=[4,6,8,10,12,20,100].map(s=>`<button data-d="${s}">d${s}</button>`).join('');
+$('dice').onclick=e=>{const s=+e.target.dataset.d;if(!s)return;s===20?roll20('d20',0):rollExpr('d'+s,'1d'+s+((+$('extra').value)?sg(+$('extra').value):''))};
+die.onclick=()=>roll20('d20',0);
+$('advB').onclick=()=>{adv=adv===1?0:1;syncAdv()};$('disB').onclick=()=>{adv=adv===-1?0:-1;syncAdv()};
+function syncAdv(){$('advB').setAttribute('aria-pressed',adv===1);$('disB').setAttribute('aria-pressed',adv===-1)}
+document.body.addEventListener('click',e=>{if(E)return;const b=e.target.closest('[data-roll]');if(!b)return;const[n,m]=b.dataset.roll.split('|');roll20(n,+m)});
+
+/* ---------- edición genérica ---------- */
+const fmt=x=>esc(x).replace(/\n/g,'<br>');
+const getP=p=>p.split('.').reduce((o,k)=>o?.[k],D);
+function setP(p,v){const ks=p.split('.');const last=ks.pop();const o=ks.reduce((o,k)=>o[k],D);o[last]=v}
+const fld=(p,l,t,ph)=>'<div>'+fld0(p,l,t,ph)+'</div>';
+const fld0=(p,l,t,ph)=>{const v=getP(p);
+ if(t==='area')return`<label class="f">${l}</label><textarea data-p="${p}" placeholder="${esc(ph||'')}">${esc(v)}</textarea>`;
+ if(t==='check')return`<label class="row" style="margin-top:10px;font-size:14px"><input type="checkbox" data-p="${p}" data-t="check" ${v?'checked':''} style="width:22px;height:22px"> ${l}</label>`;
+ return`<label class="f">${l}</label><input class="inp" data-p="${p}" ${t==='num'?'data-t="num" type="number" inputmode="numeric"':''} value="${esc(v)}" placeholder="${esc(ph||'')}">`};
+document.addEventListener('input',e=>{const el=e.target;const p=el.dataset.p;if(!p)return;
+ let v=el.dataset.t==='check'?(el.checked?1:0):el.value;if(el.dataset.t==='num')v=el.value===''?0:+el.value;setP(p,v);save();
+ if(/^(name|race|cls|quote|align)$/.test(p))drawHead();});
+document.addEventListener('change',e=>{if(e.target.dataset.t==='check'){const p=e.target.dataset.p;setP(p,e.target.checked?1:0);save()}});
+const delB=(list,i)=>`<button class="btn s del" data-del="${list}.${i}">Borrar</button>`;
+document.body.addEventListener('click',e=>{
+ const del=e.target.closest('[data-del]');if(del){const[l,i]=del.dataset.del.split('.');if(del.dataset.sure!=='1'){del.dataset.sure='1';del.textContent='¿Seguro? Tocá otra vez';return}D[l].splice(+i,1);save();drawAll();return}
+ const add=e.target.closest('[data-add]');if(add){const l=add.dataset.add;D[l].push(NEW[l]());save();drawAll();return}
+});
+const NEW={skills:()=>({n:'Nueva habilidad',a:'INT',t:0,c:0,d:''}),powers:()=>({id:uid(),i:'✦',n:'Nuevo poder',s:'',u:'',used:0,atk:'',dice:'',d:''}),
+ spells:()=>({id:uid(),l:1,n:'Nuevo conjuro',sc:'',e:0,sv:'',s:'',dice:'',p:0,d:''}),items:()=>({id:uid(),i:'◈',n:'Nuevo objeto',s:'',q:'',d:'',note:''}),traits:()=>({n:'Nuevo rasgo',d:''})};
+$('editB').onclick=()=>{E=!E;$('editB').setAttribute('aria-pressed',E);$('editB').textContent=E?'✓ Listo':'✎ Editar';drawAll();toast(E?'Modo edición: cambiá lo que quieras':'Cambios guardados')};
+
+/* ---------- páginas ---------- */
+const page=(ic,title,sub,body,open)=>`<details class="pg"${open?' open':''}><summary><span class="sig">${esc(ic)}</span><span class="sum"><h3>${title}</h3><small>${T(sub)}</small></span><span class="chev">›</span></summary><div class="body">${T(body)}</div></details>`;
+const keepOpen=(id,fn)=>{const o=[...$(id).querySelectorAll('details')].map(x=>x.open);fn();[...$(id).querySelectorAll('details')].forEach((x,i)=>{if(o[i])x.open=true})};
+
+function drawHead(){
+ $('hName').textContent=D.name;$('hSub').textContent=D.race+' · '+D.cls;$('heroName').textContent=D.name;
+ $('heroSub').textContent=[D.race,D.cls,D.align].filter(Boolean).join(' · ');$('heroQuote').textContent=D.quote;$('heroQuote').hidden=!D.quote;
+ $('av').src=D.avatar||PH;$('portImg').src=D.portrait||PH;$('heroImg').src=D.hero||PH;$('whoT').textContent='Quién es '+D.name;
+ $('hpPill').textContent='♥ '+D.hp+'/'+D.hpMax;document.title=D.name+' · Grimorio';
+}
+function drawVit(){
+ $('hpN').textContent=D.hp;$('hpMaxT').textContent='/ '+D.hpMax+' PG';$('hpBar').style.width=Math.max(0,Math.min(100,D.hp/D.hpMax*100))+'%';
+ const V=[['ac','Clase de armadura'],['touch','Toque'],['flat','Desprevenida'],['speed','Velocidad'],['bab','Ataque base'],['init','Iniciativa']];
+ $('vitals').innerHTML=E?V.concat([['hpMax','PG máximos']]).map(([k,l])=>`<div><small>${l}</small><input class="num" data-p="${k}" ${k==='speed'?'':'data-t="num" type="number"'} value="${esc(D[k])}"></div>`).join('')
+  :V.slice(0,5).map(([k,l])=>`<div><small>${l}</small><b>${k==='bab'?sg(D[k]):esc(D[k])}</b></div>`).join('')+`<div><small>Experiencia</small><b>${D.xp}</b></div>`;
+ $('initV').textContent=sg(+D.init);$('hpPill').textContent='♥ '+D.hp+'/'+D.hpMax;
+}
+function drawStats(){
+ $('stats').innerHTML=D.stats.map((s,i)=>{if(E)return`<div class="tap"><small>${s.k}</small><input class="num" style="width:100%" data-p="stats.${i}.v" data-t="num" type="number" value="${s.v}"></div>`;
+  const isI=s.k==='INT',v=isI?INTv():s.v,m=mod(v);return`<button class="tap" data-roll="${s.n}|${m}"><small>${s.k}</small><b class="${isI&&dl()?'low':''}">${sg(m)}</b><em>${v}</em></button>`}).join('');
+ $('saves').innerHTML=D.saves.map((s,i)=>E?`<div class="tap"><small>${s.n}</small><input class="num" style="width:100%" data-p="saves.${i}.b" data-t="num" type="number" value="${s.b}"></div>`:`<button class="tap" data-roll="${s.n}|${s.b}"><small>${s.n}</small><b>${sg(+s.b)}</b></button>`).join('');
+ $('resB').setAttribute('aria-pressed',!!D.res);$('encB').setAttribute('aria-pressed',!!D.enc);
+ $('skills').innerHTML=E?D.skills.map((s,i)=>`<div class="card ed"><div class="row2" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:8px">${fld(`skills.${i}.n`,'Nombre')}${fld(`skills.${i}.a`,'Atributo')}${fld(`skills.${i}.t`,'Total','num')}</div>${fld(`skills.${i}.d`,'Para qué sirve')}<div class="row" style="justify-content:space-between">${fld(`skills.${i}.c`,'Habilidad de clase ★','check')}${delB('skills',i)}</div></div>`).join('')+`<button class="add" data-add="skills">+ Agregar habilidad</button>`
+  :D.skills.map(s=>{const m=+s.t+(s.a==='INT'?dl():0);return`<button class="li" data-roll="${esc(s.n)}|${m}"><span>${s.c?'<span style="color:var(--gold)">★</span> ':''}${esc(s.n)} <span class="d">${esc(s.a)}${s.d?' · '+esc(s.d):''}</span></span><b class="${s.a==='INT'&&dl()?'low':''}">${sg(m)}</b></button>`}).join('');
+ $('imTxt').textContent=IM();
+}
+$('resB').onclick=()=>{D.res=D.res?0:1;save();drawStats()};$('encB').onclick=()=>{D.enc=D.enc?0:1;save();drawStats()};
+$('initB').onclick=()=>{if(!E)roll20('Iniciativa',+D.init)};
+
+/* maldición */
+const today=()=>{const x=new Date();return x.getFullYear()+'-'+(x.getMonth()+1)+'-'+x.getDate()};
+function drawCurse(){const c=D.curse;
+ if(!c.on){$('curseBox').innerHTML=E?`<h2>Maldición</h2><div class="card ed">${fld('curse.on','Tiene una maldición activa','check')}</div>`:'';return}
+ $('curseBox').innerHTML=`<h2>Maldición</h2><div class="card curse"><h3>☠ Mente que se apaga</h3>
+ <p style="margin:6px 0 12px;font-size:15px">Cada día tirás Voluntad. Si fallás, perdés 1 de INT. Cada 2 puntos baja tu modificador y la app recalcula CD, Saberes, rayo y espacios.</p>
+ <div class="ibig"><b class="${c.dmg?'low':''}">${INTv()}</b><span>INT (${sg(IM())}) · ${c.dmg?'−'+c.dmg+' de daño':'sin daño'}</span></div>
+ <div class="row" style="margin-top:12px"><button class="btn c" id="curseRoll">Tirada diaria de Voluntad</button><label class="row" style="font-size:14px;color:var(--soft)">CD <input class="num" data-p="curse.dc" data-t="num" type="number" value="${c.dc}" style="width:64px"></label></div>
+ <p class="note">${c.day===today()?'<span style="color:var(--sage);font-weight:800">✓ Hoy: '+esc(c.res)+'</span>':'Todavía no tiraste hoy.'}</p>
+ <div class="row"><button class="btn s" id="intM">Perder 1 INT</button><button class="btn s" id="intP">Recuperar 1 INT</button>${E?fld('curse.on','Maldición activa','check'):''}</div>
+ <div class="warn">Cambiá la CD si tu DM indica otra. 1 natural siempre falla, 20 natural siempre salva. Sigue mientras tengas el objeto maldito.</div></div>`;
+ $('curseRoll').onclick=()=>{const w=D.saves.find(s=>s.n==='Voluntad');const{r,tot}=roll20('Voluntad',+(w?w.b:0));const ok=r===20||(r!==1&&tot>=c.dc);
+  if(!ok)c.dmg++;c.res=(ok?'salvó':'falló, −1 INT')+' ('+tot+' vs CD '+c.dc+')';c.day=today();save();recalc();setTimeout(()=>toast(ok?'✦ Resististe la maldición':'☠ Perdés 1 de INT'),300)};
+ $('intM').onclick=()=>{c.dmg++;save();recalc()};$('intP').onclick=()=>{c.dmg=Math.max(0,c.dmg-1);save();recalc()};
+}
+
+/* poderes */
+function drawPowers(){
+ if(E){$('powers').innerHTML=D.powers.map((p,i)=>`<div class="card ed"><div style="display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px">${fld(`powers.${i}.i`,'Ícono')}${fld(`powers.${i}.n`,'Nombre')}</div>${fld(`powers.${i}.s`,'Resumen')}${fld(`powers.${i}.d`,'Qué hace','area')}<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">${fld(`powers.${i}.u`,'Usos/día','', 'ej. 1 o 3+INT')}${fld(`powers.${i}.atk`,'Bonif. ataque','','ej. 1')}${fld(`powers.${i}.dice`,'Daño','','ej. 1d6')}</div><div class="row" style="margin-top:10px;justify-content:flex-end">${delB('powers',i)}</div></div>`).join('')+`<button class="add" data-add="powers">+ Agregar poder</button>`;return}
+ keepOpen('powers',()=>{$('powers').innerHTML=D.powers.map((p,i)=>{const mx=uses(p),left=mx==null?null:Math.max(0,mx-p.used);
+  const sub=(p.s||'')+(mx==null?'':' · '+(left?left+' de '+mx+' hoy':'<span class="used">sin usos</span>'));
+  let btns='';if(mx!=null||p.atk!==''||p.dice){btns=`<div class="row" style="margin-top:8px"><button class="btn c" data-use="${i}" ${mx!=null&&!left?'disabled':''}>${p.atk!==''?'Usar y tirar ataque ('+sg(+p.atk)+')':p.dice?'Usar y tirar '+esc(p.dice):'Usar'}</button>${p.atk!==''&&p.dice?`<button class="btn" data-dmg="${i}">Daño ${esc(p.dice)}</button>`:''}${mx!=null&&p.used?`<button class="btn s" data-back="${i}">Devolver uso</button>`:''}</div>`}
+  return page(p.i,esc(p.n),sub,`<p>${fmt(p.d)}</p>`+btns)}).join('')});
+}
+$('powers').addEventListener('click',e=>{const t=e.target;const P=D.powers;
+ if(t.dataset.use){const p=P[+t.dataset.use];if(uses(p)!=null)p.used++;if(p.atk!=='')roll20(p.n+' (ataque)',+p.atk);else if(p.dice)rollExpr(p.n,p.dice);else{burst();toast('✦ '+p.n)}save();drawPowers()}
+ if(t.dataset.dmg){const p=P[+t.dataset.dmg];rollExpr(p.n+' (daño)',p.dice)}
+ if(t.dataset.back){const p=P[+t.dataset.back];p.used=Math.max(0,p.used-1);save();drawPowers()}});
+
+/* conjuros */
+function drawSpells(){
+ if(E){$('spells').innerHTML=`<div class="card ed">${fld('slots1','Espacios de nivel 1 por día (según tu hoja)','num')}</div>`+D.spells.map((s,i)=>`<div class="card ed" style="margin-top:8px"><div style="display:grid;grid-template-columns:70px minmax(0,1fr) minmax(0,1fr);gap:8px">${fld(`spells.${i}.l`,'Nivel','num')}${fld(`spells.${i}.n`,'Nombre')}${fld(`spells.${i}.sc`,'Escuela')}</div><div class="ed row2" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">${fld(`spells.${i}.sv`,'Salvación','','ej. Voluntad')}${fld(`spells.${i}.s`,'Alcance/duración')}${fld(`spells.${i}.dice`,'Dado','','ej. 1d4+1')}</div>${fld(`spells.${i}.d`,'Qué hace','area')}<div class="row" style="justify-content:space-between">${fld(`spells.${i}.e`,'Encantamiento (+1 CD)','check')}${fld(`spells.${i}.p`,'Preparado ✓','check')}${delB('spells',i)}</div></div>`).join('')+`<button class="add" data-add="spells">+ Agregar conjuro</button>`;return}
+ keepOpen('spells',()=>{const lv=[...new Set(D.spells.map(s=>+s.l))].sort((a,b)=>a-b);const mx=max1(),used=Math.min(D.slotsUsed,mx);
+  $('spells').innerHTML=lv.map(l=>{const head=l===0?`<div class="lvl"><h3>Trucos</h3><span class="tag">A voluntad</span></div>`:l===1?`<div class="lvl"><h3>Nivel 1 · ${mx-used} de ${mx}</h3><div class="pips">${Array.from({length:mx},(_,i)=>`<button class="pip ${i<used?'off':''}" data-pip="${i}" aria-label="Espacio ${i+1}"></button>`).join('')}</div></div>`:`<div class="lvl"><h3>Nivel ${l}</h3></div>`;
+   return head+'<div class="list">'+D.spells.map((s,i)=>+s.l!==l?'':page(s.p?'✓':'✦',esc(s.n),[s.sc,(s.sv?'CD '+cd(s)+' '+s.sv:''),s.s].filter(Boolean).join(' · '),`<p>${fmt(s.d)}</p><div class="row" style="margin-top:8px"><button class="btn c" data-cast="${i}">${l>0?'Lanzar (gasta 1 espacio)':'Lanzar'}${s.dice?' y tirar '+esc(s.dice):''}</button></div>`)).join('')+'</div>'}).join('');});
+}
+$('spells').addEventListener('click',e=>{const t=e.target;
+ if(t.dataset.pip!==undefined){const i=+t.dataset.pip;D.slotsUsed=i<D.slotsUsed?i:i+1;save();drawSpells()}
+ if(t.dataset.cast){const s=D.spells[+t.dataset.cast];if(+s.l===1){if(D.slotsUsed>=max1()){toast('No te quedan espacios de nivel 1');return}D.slotsUsed++}
+  if(/resistencia/i.test(s.n)){D.res=1;drawStats()}if(s.dice)rollExpr(s.n,s.dice);else{burst();toast('✦ '+s.n)}save();drawSpells()}});
+
+/* objetos */
+function drawItems(){
+ if(E){$('items').innerHTML=D.items.map((it,i)=>`<div class="card ed"><div style="display:grid;grid-template-columns:70px minmax(0,1fr) 80px;gap:8px">${fld(`items.${i}.i`,'Ícono')}${fld(`items.${i}.n`,'Nombre')}${fld(`items.${i}.q`,'Cant.')}</div>${fld(`items.${i}.s`,'Resumen')}${fld(`items.${i}.d`,'Qué hace','area')}<div class="row" style="margin-top:10px;justify-content:flex-end">${delB('items',i)}</div></div>`).join('')+`<button class="add" data-add="items">+ Agregar objeto</button>`;}
+ else keepOpen('items',()=>{$('items').innerHTML=D.items.map((it,i)=>page(it.i,esc(it.n)+(it.q!==''?` <span class="tag">×${esc(it.q)}</span>`:''),it.s,`<p>${fmt(it.d)}</p>${it.q!==''?`<div class="row"><button class="btn s" data-qm="${i}">− Usar uno</button><button class="btn s" data-qp="${i}">+ Agregar</button></div>`:''}${fld(`items.${i}.note`,'Tus notas','area','Lo que te dijo el DM…')}`)).join('')});
+ $('purse').innerHTML=`<div><small>Oro (po)</small><input class="num" data-p="gold" data-t="num" type="number" value="${D.gold}" style="width:100%"></div><div><small>Experiencia</small><input class="num" data-p="xp" data-t="num" type="number" value="${D.xp}" style="width:100%"></div>`;
+}
+$('items').addEventListener('click',e=>{const t=e.target;if(t.dataset.qm||t.dataset.qp){const it=D.items[+(t.dataset.qm||t.dataset.qp)];it.q=String(Math.max(0,(+it.q||0)+(t.dataset.qm?-1:1)));save();drawItems()}});
+
+/* historia */
+function drawStory(){
+ $('ident').innerHTML=`<div class="card">${fld('name','Nombre')}<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">${fld('race','Raza')}${fld('cls','Clase y nivel')}${fld('align','Alineamiento')}${fld('deity','Dios','','—')}${fld('age','Edad','','—')}${fld('home','País natal','','—')}</div>${fld('player','Jugadora')}${fld('quote','Frase')}</div>`;
+ $('story').innerHTML=STORY.map(([k,l,ph])=>`<h2>${l}</h2><textarea data-p="story.${k}" placeholder="${esc(ph)}" style="min-height:${k==='origin'?180:100}px">${esc(D.story[k])}</textarea>`).join('');
+ $('traits').innerHTML=E?D.traits.map((t,i)=>`<div class="card ed">${fld(`traits.${i}.n`,'Rasgo')}${fld(`traits.${i}.d`,'Descripción','area')}<div class="row" style="justify-content:flex-end;margin-top:8px">${delB('traits',i)}</div></div>`).join('')+`<button class="add" data-add="traits">+ Agregar rasgo</button>`
+  :D.traits.map(t=>page('❖',esc(t.n),t.d.split('.')[0],`<p>${fmt(t.d)}</p>`)).join('');
+ drawGal();
+}
+function drawGal(){$('gal').innerHTML=D.gallery.map((g,i)=>`<figure><img src="${g.src}" alt="" loading="lazy"><button class="open" data-gi="${i}" aria-label="Ver imagen"></button></figure>`).join('')+`<label class="up">+ Subir imagen<input type="file" accept="image/*" id="galFile" multiple></label>`;
+ $('galFile').onchange=async e=>{for(const f of e.target.files){const src=await shrink(f,1000);if(src)D.gallery.push({id:uid(),src})}save();drawGal();toast('Imagen agregada')}}
+function shrink(file,max){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.82))};im.onerror=()=>res(null);im.src=r.result};r.readAsDataURL(file)})}
+$('portFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const s=await shrink(f,1000);if(s){D.portrait=s;D.gallery.push({id:uid(),src:s});save();drawHead();drawGal()}};
+$('heroFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=await shrink(f,1200);if(x){D.hero=x;save();drawHead();toast('Nueva portada')}};
+$('avFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const s=await shrink(f,300);if(s){D.avatar=s;save();drawHead()}};
+let gi=-1;
+$('gal').addEventListener('click',e=>{const b=e.target.closest('[data-gi]');if(!b)return;gi=+b.dataset.gi;$('lbImg').src=D.gallery[gi].src;$('lbDel').textContent='Borrar';$('lb').classList.add('on')});
+$('lbX').onclick=()=>$('lb').classList.remove('on');
+$('lbPort').onclick=()=>{D.portrait=D.gallery[gi].src;save();drawHead();toast('Nuevo retrato');$('lb').classList.remove('on')};
+$('lbHero').onclick=()=>{D.hero=D.gallery[gi].src;save();drawHead();toast('Nueva portada');$('lb').classList.remove('on')};
+$('lbDel').onclick=e=>{if(e.target.textContent==='Borrar'){e.target.textContent='¿Seguro?';return}D.gallery.splice(gi,1);save();drawGal();$('lb').classList.remove('on')};
+
+/* diario */
+function drawJournal(){
+ $('journal').innerHTML=D.journal.length?D.journal.map((j,i)=>`<div class="card entry"><div class="meta"><input class="inp" data-p="journal.${i}.title" value="${esc(j.title)}" placeholder="Título de la sesión" style="flex:1"><input class="inp" data-p="journal.${i}.date" type="date" value="${esc(j.date)}" style="width:auto"></div><textarea data-p="journal.${i}.text" placeholder="Qué pasó, a quién conociste, qué descubriste…" style="margin-top:8px;min-height:140px">${esc(j.text)}</textarea><div class="row" style="justify-content:flex-end;margin-top:6px">${delB('journal',i)}</div></div>`).join('')
+  :`<div class="card" style="text-align:center;color:var(--soft)">Todavía no hay entradas. Contá acá lo que vive tu personaje en cada sesión.</div>`;
+}
+$('newEntry').onclick=()=>{D.journal.unshift({id:uid(),date:new Date().toISOString().slice(0,10),title:'',text:''});save();drawJournal();$('journal').querySelector('input').focus()};
+
+/* vida */
+const amt=()=>Math.max(1,+$('hpAmt').value||1);
+$('dmg').onclick=()=>{D.hp-=amt();save();drawVit();if(D.hp<=0)toast(D.hp<=-st('CON').v?D.name+' ha caído…':'¡Inconsciente!')};
+$('heal').onclick=()=>{D.hp=Math.min(D.hpMax,D.hp+amt());save();drawVit()};
+$('full').onclick=()=>{D.hp=D.hpMax;save();drawVit()};
+$('hpPill').onclick=()=>go('ficha');
+$('rest').onclick=()=>{D.slotsUsed=0;D.powers.forEach(p=>p.used=0);D.res=0;D.hp=Math.min(D.hpMax,D.hp+1);D.curse.dmg=Math.max(0,D.curse.dmg-1);save();recalc();toast('☾ Magia recuperada. No olvides la tirada de la maldición.')};
+
+/* copia */
+$('copyB').onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(D));toast('Copia copiada ✓')}catch(e){$('impT').value=JSON.stringify(D);$('impT').select();toast('Copiá el texto del cuadro')}};
+if(window.self===window.top){$('dlB').hidden=false;$('dlB').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='aluz-copia-'+new Date().toISOString().slice(0,10)+'.json';a.click()}}
+function importTxt(txt){try{const n=JSON.parse(txt);if(!n.name)throw 0;D=n;for(const k in D0)if(D[k]===undefined)D[k]=JSON.parse(JSON.stringify(D0[k]));flush();$('impT').value='';drawAll();toast('Datos importados ✓');go('ficha')}catch(e){toast('Ese archivo no es una copia válida')}}
+$('impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importTxt(r.result);r.readAsText(f)};
+$('impB').onclick=()=>{try{const n=JSON.parse($('impT').value);if(!n.name)throw 0;D=n;for(const k in D0)if(D[k]===undefined)D[k]=JSON.parse(JSON.stringify(D0[k]));save();$('impT').value='';drawAll();toast('Copia importada ✓')}catch(e){toast('Ese texto no es una copia válida')}};
+$('resetB').onclick=e=>{if(e.target.dataset.sure!=='1'){e.target.dataset.sure='1';e.target.textContent='¿Borrar todo? Tocá otra vez';return}D=JSON.parse(JSON.stringify(D0));save();drawAll();e.target.dataset.sure='';e.target.textContent='Restablecer todo';toast('Ficha restablecida')};
+
+/* navegación */
+let cur='ficha';
+function go(t){if(!$('t-'+t))t='ficha';$('rc').classList.remove('on');cur=t;document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));document.querySelectorAll('.bar a').forEach(a=>a.classList.toggle('on',a.dataset.t===t));
+ $('editB').style.visibility=/^(ficha|magia|objetos|historia)$/.test(t)?'visible':'hidden';try{if(location.hash!=='#'+t)history.replaceState(null,'','#'+t)}catch(e){}window.scrollTo(0,0)}
+document.querySelectorAll('.bar a').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.t)});
+addEventListener('hashchange',()=>go(location.hash.slice(1)));
+$('av').onclick=()=>go('historia');
+
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200)}
+$('motes').innerHTML=Array.from({length:34},()=>`<i style="left:${Math.random()*100}%;top:${20+Math.random()*80}%;animation-delay:${(Math.random()*9).toFixed(1)}s"></i>`).join('');
+
+function recalc(){drawStats();drawCurse();drawPowers();drawSpells();drawVit()}
+function drawAll(){drawHead();drawVit();recalc();drawItems();drawStory();drawJournal()}
+drawAll();go(location.hash.slice(1)||(D.name==='Mi personaje'&&!D.skills.length?'historia':'ficha'));
+if('serviceWorker' in navigator&&location.protocol==='https:'&&window.self===window.top)navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
